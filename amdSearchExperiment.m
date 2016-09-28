@@ -1,3 +1,24 @@
+% Experiment to explore visual search strategies, mainly in patients with
+% age-related macular degeneration (AMD). Multiple search paradigms can be
+% selected or changed quickly to be able to react to the specific visual
+% abilities patients have left.
+%
+% The experiment includes options to enable motion and gaze tracking. The
+% gaze tracking assumes a connected EyeLink 1000 device. The motion
+% tracking assumes an Arduino connected via USB, set up to wait for input
+% of a 'p' to send a 5v pulse to an A/D board connected to a PC running the
+% MotionMonitor software, to trigger recording of motion data in sync with
+% the experiment.
+%
+% A star pattern to infer a fixation point from centrally converging spikes
+% is implemented to allow patients with losses of visual ability in parts
+% of their visual field to fixate centrally without being able to see the
+% center of the fixation cross.
+%
+% Programmed by Julius Krumbiegel at Ludwig-Maximilians-Universitaet
+% Munich starting in July 2016
+
+
 % Clear the workspace and the screen
 sca;
 close all;

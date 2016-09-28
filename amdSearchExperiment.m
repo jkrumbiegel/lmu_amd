@@ -34,7 +34,7 @@ exp.eyetracking = false;
 
 % Define a folder in which the experiment and eyetracking data will be
 % stored. Create the folder if it doesn't exist.
-resultsFolder = 'C:\Users\ru35pec\Desktop\Julius\Macular Degeneration\AMD Experimente\results';
+resultsFolder = 'C:\Users\ru35pec\Desktop\Julius\Macular Degeneration\AMD Experimente\results\';
 [status,message,messageid] = mkdir(resultsFolder);
 if ~status
     error('The specified results folder doesn''t exist and couldn''t be created');

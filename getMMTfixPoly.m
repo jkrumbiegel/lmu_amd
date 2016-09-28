@@ -1,5 +1,5 @@
 function coords = getMMTfixPoly(n, rotation, widthDeg, innerCircle, outerCircle)
-% GETMMTFIXPOLY(n, rotation, widthDeg, innerCircle, outerCircle)
+% coords = GETMMTFIXPOLY(n, rotation, widthDeg, innerCircle, outerCircle)
 %
 % Get coordinates of polygons forming a macular mapping test star pattern
 % with 'n' spikes, 'rotation' rotation in degrees, 'widthDeg' width of each

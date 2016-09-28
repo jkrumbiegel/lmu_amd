@@ -3,7 +3,12 @@ sca;
 close all;
 clearvars;
 
+% Turn motion tracking on or off. If turned on, this will send the trigger
+% signal to the arduino which gives the MotionMonitor its recording trigger
 exp.motiontracking = false;
+% Turn eye tracking on or off. If this is turned on but no working eye
+% tracker is connected, you are asked if you want to start the experiment
+% with eye tracking dummy mode.
 exp.eyetracking = false;
 
 cd='C:\Users\ru35pec\Desktop\Julius\Macular Degeneration\AMD Experimente';
@@ -41,7 +46,7 @@ screens = Screen('Screens');
 screenNumber = max(screens);
 HideCursor(screenNumber);
 
-% Define some colors
+% Define some colors for convenience
 white = [1;1;1];
 black = [0;0;0];
 grey = white / 2;
@@ -80,57 +85,63 @@ exp.screenDistanceCM = 57;
 % Calculate how many pixels are 1 degree of visual angle
 pixPerCM = resolution.width/exp.screenWidthCM;
 va = 2 * atand(0.5/exp.screenDistanceCM); % Visual Angle for 1 cm
-pva = pixPerCM / va;
+pva = pixPerCM / va; % This value is used throughout the script to set distances in visual angles in functions that require pixel units
 exp.pixPerVA = pva;
 
-% Set trial parameters
+%% Set trial parameters
 exp.searchMode = 2; % 1: pointing, 2: yes/no
-exp.conjunctionSearch = true;
-exp.noTargetPossible = true;
-exp.nTrialsMissingTargets = 5;
-exp.numStimuli = 35;
-exp.numTrials = 10;
-exp.fixCrossType = 2; % 1: normal, 2: MMT star pattern
-exp.fixCrossWidth = 5*pva;
-exp.fixCrossLineWidth = 2; % in px
-exp.fixCrossDuration = 3;
-exp.fixCrossMMTn = 8;
-exp.fixCrossMMTrot = 360/exp.fixCrossMMTn/2;
-exp.fixCrossMMTvarRot = true;
-exp.fixCrossMMTwidth = 0.2*360/exp.fixCrossMMTn;
-exp.fixCrossMMTrad = 0;
-exp.fixCrossMMTColor = black;
-exp.jitterDistribution = true;
-exp.jitterStrength = 1*pva;
-exp.distributionMode = 4; %1: circle, 2: grid pattern, 3: random placement, 4: rectangular grid
-exp.rectDistribution = [7,5];
-exp.rectGridXDistance = 6*pva;
-exp.rectGridYDistance = 4*pva;
-exp.stimGridDistance = 4*pva;
-exp.stimCircleRadius = 10*pva;
-exp.randomStimuliSafetyDistance = 2.5*pva;
+exp.conjunctionSearch = true; % Enable or disable conjunction search (uses stimuli 3,4,5 instead of 1,2)
+exp.noTargetPossible = true; % Enable or disable trials without target (don't use in pointing mode)
+exp.nTrialsMissingTargets = 5; % Number of trials without target
+exp.numStimuli = 35; % Number of stimuli per trial (target and distractors)
+exp.numTrials = 10; % Number of trials per experiment
 
-lineWidthPix = 5;
+exp.fixCrossType = 2; % Type of fixation cross. 1: normal, 2: MMT star pattern (Macular Mapping Test, to infer fixation point from converging lines)
+exp.fixCrossWidth = 5*pva; % Width of standard fixation cross in pixels
+exp.fixCrossLineWidth = 2; % Line width of standard fixation cross in pixels
+exp.fixCrossDuration = 3; % Fixation cross duration in seconds
+exp.fixCrossMMTn = 8; % Number of star spikes in the MMT fixation cross
+exp.fixCrossMMTrot = 360/exp.fixCrossMMTn/2; % Rotation of the MMT fixation cross in degrees
+exp.fixCrossMMTvarRot = true; % If true, the MMT fixation cross is randomly rotated in each trial. This takes precedence over the fixed rotation setting
+exp.fixCrossMMTwidth = 0.2*360/exp.fixCrossMMTn; % Width of each MMT fixation cross star spikes in degrees
+exp.fixCrossMMTinnerRad = 0; % Inner radius of the MMT fixation cross pattern in pixels. If 0, the spikes meet in the center point.
+exp.fixCrossMMTColor = black; % Color of the MMT fixation cross
 
+exp.jitterDistribution = true; % Enable or disable radial area jitter of the stimulus positions. Doesn't have an effect on randomly placed stimuli
+exp.jitterStrength = 1*pva; % Maximum radial displacement by the stimulus position jitter in pixels
+exp.distributionMode = 4; % Distribution pattern for stimulus positions. 1: circle, 2: square grid, 3: random placement, 4: rectangular grid
+exp.rectDistribution = [7,5]; % Dimensions of the rectangular grid in X and Y. The multiple of both must equal the number of stimuli
+exp.rectGridXDistance = 6*pva; % Horizontal distance between stimuli in the rectangular grid pattern in pixels
+exp.rectGridYDistance = 4*pva; % Vertical distance between stimuli in the rectangular grid pattern in pixels
+exp.stimGridDistance = 4*pva; % Horizontal and vertical distance between stimuli in the square grid pattern in pixels
+exp.stimCircleRadius = 10*pva; % Radius of the circle pattern in pixels
+exp.randomStimuliSafetyDistance = 2.5*pva; % Minimum distance between the points generated in the random grid pattern in pixels. This distance will be kept to the boundary rectangle borders as well
+
+lineWidthPix = 5; % A standard line width in pixels that may be used in stimulus definitions below
+
+% Create a vector whose elements indicate which trials in the experiment
+% have targets (1) and which don't (0)
 if exp.noTargetPossible
         exp.existingTargetIndex = Shuffle([zeros(1,exp.nTrialsMissingTargets),ones(1,exp.numTrials-exp.nTrialsMissingTargets)]);
     else
         exp.existingTargetIndex = ones(1,exp.numStimuli);
 end
 
+% Check if rectangle dimensions and number of stimuli agree
 if exp.rectDistribution(1)*exp.rectDistribution(2)~=exp.numStimuli
                 error(['Rectangle distribution doesn''t make sense. You tried ',num2str(exp.numStimuli),' stimuli in a ',num2str(exp.rectDistribution(1)),' by ',num2str(exp.rectDistribution(2)),' pattern']);
 end
 
 %% Search stimulus definitions
+
 % Normal Search Distractor
-exp.s1DrawType = drawTypeLine;
-exp.s1Stimulus = 'E';
-exp.s1Size = 1*pva;
-exp.s1Rot = 0;
-exp.s1LineWidth = lineWidthPix;
-exp.s1Color = white;
-exp.s1StimCoords = getStimCoords(exp.s1Stimulus,exp.s1Size,exp.s1Rot,exp.s1LineWidth);
+exp.s1DrawType = drawTypeLine; % The drawing type used for the selected stimulus. Currently, only stimuli drawn with a single drawing routine are supported
+exp.s1Stimulus = 'E'; % The chosen stimulus. Must be one of the predefined options in getStimCoords()
+exp.s1Size = 1*pva; % The size of the stimulus which is multiplied with the stimulus coordinates to scale it
+exp.s1Rot = 0; % The rotation of the stimulus in degrees
+exp.s1LineWidth = lineWidthPix; % The line width of the stimulus, only relevant for drawing routines relying on lines instead of filled shapes. Is also relevant for some stimuli whose coordinates have to be adjusted to their line thickness
+exp.s1Color = white; % The color of the stimulus. Currently, no multicolored stimuli are supported
+exp.s1StimCoords = getStimCoords(exp.s1Stimulus,exp.s1Size,exp.s1Rot,exp.s1LineWidth); % Get the desired stimulus coordinates by feeding the specified settings into the getStimCoords() function
 
 % Normal Search Target
 exp.s2DrawType = drawTypeLine;
@@ -170,16 +181,28 @@ exp.s5StimCoords = getStimCoords(exp.s5Stimulus,exp.s5Size,exp.s5Rot,exp.s5LineW
 
 %% Eyelink configuration
 if exp.eyetracking
+    % Set eyetracking dummymode. Normal eyetracking if set to 0, dummymode
+    % if set to 1
     dummymode=0;
     
+    % Initialize the eyelink data structure with standard settings
     el=EyelinkInitDefaults(window);
-    el.MMTfixation = true;
-    el.MMTouterRadius = 5*pva;
-    el.MMTinnerRadius = 0;
-    el.MMTnspikes = 8;
-    el.MMTspikewidth = (360/el.MMTnspikes)/3;
-    EyelinkUpdateDefaults(el); % Without this no changes to el will be picked up by the callback function
-
+    
+    % Write custom settings to the eyelink data structure. These will only
+    % be used if the customized PsychEyelinkDispatchCallback.m file in the
+    % folder C:\toolbox\Psychtoolbox\PsychHardware\EyelinkToolbox\EyelinkBasic
+    % is present. Otherwise none of these settings will have any effect but
+    % they shouldn't disrupt the process
+    el.MMTfixation = true; % Enable or disable the MMT star calibration pattern
+    el.MMTouterRadius = 5*pva; % The outer radius of the MMT star pattern in pixels
+    el.MMTinnerRadius = 0; % The inner radius of the MMT star pattern in pixels
+    el.MMTnspikes = 8; % The number of star spikes in the MMT star pattern
+    el.MMTspikewidth = (360/el.MMTnspikes)/3; % The width of each MMT star spike in degrees
+    
+    % Without this no changes to the eyelink data structure will be picked
+    % up by the callback function
+    EyelinkUpdateDefaults(el); 
+    
     % Initialization of the connection with the Eyelink Gazetracker.
     % exit program if this fails.
     if ~EyelinkInit(dummymode)
@@ -202,15 +225,21 @@ if exp.eyetracking
     EyelinkDoDriftCorrection(el);
 end
 
-%% Show intro text
+%% Show intro text and continue after any key is pressed
 DrawFormattedText(window, 'Press any key to start the experiment', 'center', 'center', black);
 Screen('Flip',window);
 KbStrokeWait();
 
-%% Start of trial loop
+%% Loop through all trials
 for t=1:exp.numTrials
-    % Define a vector with number of stimuli with desired type numbers
-    
+    % Define a vector with as many entries as there are stimuli, where
+    % the type of stimulus is specified by its code number. These are:
+    % 1: normal search distractor
+    % 2: normal search target
+    % 
+    % 3: conjunction search distractor 1
+    % 4: conjunction search target
+    % 5: conjunction search distractor 2
     if ~exp.conjunctionSearch
         if ~exp.existingTargetIndex(t)
             exp.trial(t).stimulusTypes = ones(1,exp.numStimuli); % No Target
@@ -247,8 +276,7 @@ for t=1:exp.numTrials
             exp.trial(t).stimCenters = getLinSpacedPointsOnRectGrid(exp.rectDistribution,exp.rectGridXDistance,exp.rectGridYDistance);
     end
     
-    % Jitter the stimulus positions radially
-    
+    % Jitter the stimulus positions radially, but not if random mode is selected    
     if exp.jitterDistribution && exp.distributionMode ~= 3
         jitterValues = NaN(2,exp.numStimuli);
         for i = 1:exp.numStimuli
@@ -262,7 +290,8 @@ for t=1:exp.numTrials
     stimuli = cell(4, exp.numStimuli);
     
     % Loop through all the stimuli and add their properties to the stimuli
-    % cell array
+    % cell array, which will be the input for the psychtoolbox drawing
+    % routines further down
     for i=1:exp.numStimuli
         switch exp.trial(t).stimulusTypes(i)
             case 1 % Normal Search Distractor
@@ -329,32 +358,47 @@ for t=1:exp.numTrials
     % Draw fixation cross
     Screen('FillRect', window, grey);
     switch exp.fixCrossType
+        % This draws a simple fixation cross made of two intersecting lines
         case 1
             Screen('DrawLines', window,...
                      [-exp.fixCrossWidth/2, exp.fixCrossWidth/2, 0, 0;...
                       0, 0, -exp.fixCrossWidth/2, exp.fixCrossWidth/2],...
                       exp.fixCrossLineWidth, white, [xCenter yCenter], 2);
+                  
+        % This draws a star pattern which allows patients with imperfect
+        % vision to infer the fixation point from the converging lines. It
+        % will randomly rotate between trials if the respective option is
+        % turned on to reduce afterimages from constant exposure to the
+        % same stimulus.
         case 2
             if exp.fixCrossMMTvarRot
                 rot = randi(360);
             else
                 rot = exp.fixCrossMMTrot;
             end
+            
+            % Get the star pattern polygon coordinates for a star pattern
+            % with the parameters specified in the settings section
             fixpolycoords = getMMTfixPoly(exp.fixCrossMMTn,...
-                rot,exp.fixCrossMMTwidth,exp.fixCrossMMTrad,sqrt(xCenter^2 + yCenter^2));
+                rot,exp.fixCrossMMTwidth,exp.fixCrossMMTinnerRad,sqrt(xCenter^2 + yCenter^2));
             for poly = 1:size(fixpolycoords,2)/2
                 Screen('FillPoly', window, exp.fixCrossMMTColor, fixpolycoords(1:3,(2*poly-1):(2*poly))+repmat([xCenter yCenter],[3 1]));
             end
     end
     % Show fixation cross
     Screen('Flip',window);
+    
+    % Send the eyelink computer the signal to start recording gaze data
     if exp.eyetracking
         Eyelink('StartRecording');
     end
+    
+    % Show the fixation cross for the amount of time specified in the
+    % settings section
     WaitSecs(exp.fixCrossDuration);
 
  
-    %% Loop through all used drawing types and draw every groups members
+    %% Loop through all used drawing types and draw all groups' members
     % with one command
     for drawType = unique([stimuli{1,:}])
         typeIndex = find([stimuli{1,:}] == drawType);
@@ -383,7 +427,9 @@ for t=1:exp.numTrials
     % is not really possible on most displays and no stimuli should appear
     % there)
     if exp.searchMode == 1
+        % Set the cursor position (invisibly) to the top left pixel
         SetMouse(0, 0, screenNumber);
+        % Read cursor position to ensure correct behavior
         [xTouchscreen,yTouchscreen,buttons] = GetMouse(screenNumber);
         xTouchscreenPrev = xTouchscreen;
         yTouchscreenPrev = yTouchscreen;
@@ -391,8 +437,12 @@ for t=1:exp.numTrials
     
     %% Show the stimuli
     Screen('Flip', window);
+    
+    % Get the time when the search stimuli were shown
     tFlip = GetSecs();
     
+    % Send the eyelink computer a marker that the search array is now
+    % visible
     if exp.eyetracking
         Eyelink('Message', 'SYNCTIME');
     end
@@ -400,12 +450,18 @@ for t=1:exp.numTrials
     %% Check for a response
     switch exp.searchMode
         case 1
+        % Pointing task
+        % In this case a touchscreen cursor position change will mark the
+        % reaction of the subject 
             while xTouchscreen == xTouchscreenPrev && yTouchscreen == yTouchscreenPrev
                 xTouchscreenPrev = xTouchscreen;
                 yTouchscreenPrev = yTouchscreen;
                 [xTouchscreen,yTouchscreen,buttons] = GetMouse(screenNumber);
             end
         case 2
+        % Yes / No task
+        % In this case pressing the y or n key will mark the reaction of
+        % the subject
             RestrictKeysForKbCheck([KbName('y'),KbName('n')]);
             [~, keyCode, ~] = KbPressWait();
             if keyCode(KbName('y'))
@@ -415,7 +471,7 @@ for t=1:exp.numTrials
             end
             RestrictKeysForKbCheck([]);
     end
-    
+    % Record reaction time
     tTouch = GetSecs();
     
     %% Give the arduino the signal to send a 5v pulse to the AD board that
@@ -424,13 +480,18 @@ for t=1:exp.numTrials
         fprintf(arduino,'%c','p');
     end
     
+    % Send the eyelink computer the signal to stop the current recording
     if exp.eyetracking
         Eyelink('Message', 'TRIAL_END');
         Eyelink('StopRecording');
     end
     
     %% Save trial related data
+    % Save all stimuli parameters and coordinates in exp structure
     exp.trial(t).stimuli = stimuli;
+    
+    % Pointing task
+    % Save touch positions, but not if no target was present in a trial
     if exp.searchMode == 1
         exp.trial(t).touchPos = [xTouchscreen yTouchscreen]';
         if exp.existingTargetIndex(t)
@@ -438,6 +499,9 @@ for t=1:exp.numTrials
         else
             exp.trial(t).touchError = NaN;
         end
+        
+    % Yes / No task
+    % Save yes no response, but no touch position
     elseif exp.searchMode == 2
         if exp.existingTargetIndex(t)
             exp.trial(t).targetExistent = 'yes';
@@ -445,6 +509,9 @@ for t=1:exp.numTrials
             exp.trial(t).targetExistent = 'no';
         end
     end
+    
+    % Save touch times and flip times into exp structure, calculate
+    % reaction time as well
     exp.trial(t).tTouch = tTouch;
     exp.trial(t).tFlip = tFlip;
     exp.trial(t).RT = tTouch - tFlip;
@@ -452,15 +519,17 @@ for t=1:exp.numTrials
     % Save a screenshot of the stimuli for easier visual analysis later
     exp.trial(t).Screenshot = Screen('GetImage', window);
     
-    % Save mat file
+    % Save exp struct to a mat file in the results folder
     save([cd,'\results\',filename,'.mat'],'exp');
     
+    % Quit if shift is pressed at trial end
     [keyIsDown,secs,keyCode] = KbCheck; 
-    if keyCode(KbName('shift')) % Quit if shift is pressed
+    if keyCode(KbName('shift')) 
         break
     end
 
-    if keyCode(KbName('control')) % Pause if control is pressed
+    % Pause if control is pressed at trial end
+    if keyCode(KbName('control')) 
         DrawFormattedText(window, 'Experiment paused\nPress any key to continue', 'center', 'center', black);
         Screen('Flip',window);
         WaitSecs(3)
@@ -482,6 +551,9 @@ if exp.motiontracking
     fclose(arduino);
 end
 
+% Receive the recorded eyelink data from eyelink computer. This will fail
+% if the chosen folder does not exist yet. The eyelink computer will flash
+% red text and show the file explorer in that case.
 if exp.eyetracking
     Eyelink('Command', 'set_idle_mode');
     WaitSecs(0.5);

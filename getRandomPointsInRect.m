@@ -1,4 +1,15 @@
 function coords = getRandomPointsInRect(n, x, y, safety)
+% GETRANDOMPOINTSINRECT creates n randomly distributed points in a
+% rectangle with a width of x and a height of y. Points are picked randomly
+% and then checked for collision with all other points. A collision is
+% detected if the distance between a new point and all previously
+% generated points is lower than safety. The safety distance is also
+% applied to the border of the rectangle, so stimuli placed at the
+% generated locations are not cut off by the screen borders.
+% 
+% The algorithm does not check all possible locations for a new point, it
+% just tries a million points and reports failure if no new feasible point
+% has been found at that stage.
 
 safety = ceil(safety);
 

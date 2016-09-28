@@ -1,12 +1,78 @@
 <html>
 <head>
 <title>AMD Experiment Manual</title>
+<style>
+
+      span.warning {
+         color: red;
+      }
+      span.filefolder {
+         color: green;
+      }
+
+    </style>
 </head>
 <body text="#000000" bgcolor="#FFFFFF" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+
 <h1>AMD Experiment Manual</h1>
+
 <h2>Introduction</h2>
+
 <p>This is a manual for the visual search experiment meant for patients with age-related macular
 degeneration written by Julius Krumbiegel at Ludwig-Maximilians-Universit&auml;t Munich in July 2016.</p>
+
+<h2>Basic Setup</h2>
+
+<h3>Hardware and Software</h3>
+
+<h4>General</h4>
+
+<p>The experiment is written in MATLAB (v. R2016a). It uses the freely available Psychtoolbox v3 (PTB) to display full-screen stimuli.
+If the toolbox is not installed, the experiment cannot be run. All required code files are uploaded and maintained at
+<a href="https://github.com/jkrumbiegel/lmu_amd">https://github.com/jkrumbiegel/lmu_amd</a>. File locations inside the project folder are described relative to the
+chosen root folder (RF), e.g., <span class="filefolder">/RF/amdSearchExperiment/rotateCoordinates.m</span>.</p>
+
+<h4>Computer</h4>
+<p>The experiment was mainly coded and tested on a Dell Latitude E7450 laptop running Windows 7. It is not very CPU-demanding and should run on
+most available hardware. For full compatibility with EyeLink eye trackers and for the synchronization with the MotionMonitor
+via an Arduino, you need at least one free Ethernet and USB port, each, as well as some means to connect an external touch screen monitor.
+In the test setup, the monitor was connected via VGA on the Dell's external docking station.</p>
+
+<p>With the test setup and its Intel HD5500 graphics chip, PTB was not able to enable global anti-aliasing. To avoid jagged edges in stimuli and fixation patterns it
+would be beneficial to run the experiment on a computer with a graphics card capable of anti-aliasing.</p>
+
+<h4>Monitor</h4>
+
+<p>For optimal performance, you should not use a setup where two monitors
+are used in extended desktop mode. PTB will complain that flip timings for drawing new stimuli to the screen can't be kept
+accurately. Single monitor or duplicate mode are fine.</p>
+
+<p>The experiment has a mode where subjects are supposed to point to search stimuli on the screen. This can only work with a
+touch screen monitor. So far, only the iiyama ProLite T2452MTS was tested with the experiment. Touch detection works by checking
+if the cursor position changes from [0,0] to some other coordinate pair. Because no click needs to be registered, the pointing
+detection can be triggered by moving the cursor with a mouse or trackpad. <span class="warning">Therefore, you need to ensure that neither you nor
+the patient can move the mouse or trackpad during the experiment, but only touch the screen to give a response.</span> Otherwise,
+you will get false positives.</p>
+
+<p>Because PTB checks the monitor's resolution and calculates stimulus sizes relative to it, the experiment should be able to run
+at basically any resolution. It was tested only at the iiyama's native resolution of 1920x1080px.</p>
+
+<h4>Eye Tracking</h4>
+
+<p>The experiment was written to work with the EyeLink 1000 eye tracking device. Because subject's are required to touch the
+screen in most cases, the tower mount should be used instead of the desktop mount to keep the space in front of the cameras clear.</p>
+
+<p>PTB comes with most of the files needed to work with the EyeLink system. But you are also required to install the EyeLink Developers Kit
+and replace the standard Eyelink.mexa64 in the <span class="filefolder">/Psychtoolbox/Psychbasic/</span> folder. Both of these things can be downloaded from
+the SR Research forums.</p>
+
+<p>For calibration before eye tracking, the Eyelink toolbox accesses a file called <span class="filefolder">PsychEyelinkDispatchCallback.m</span> located in
+<span class="filefolder">/Psychtoolbox/PsychHardware/EyelinkToolbox/EyelinkBasic/</span>. To be able to use custom modifications of the calibration stimulus to
+enable AMD patients to fixate correctly, this file needs to be replaced with a modified version at
+<span class="filefolder">/RF/EyelinkBasic/PsychEyelinkDispatchCallback.m</span>.</p>
+
+
+
 </body>
 
 </html>

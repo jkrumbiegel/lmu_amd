@@ -32,7 +32,13 @@ exp.motiontracking = false;
 % with eye tracking dummy mode.
 exp.eyetracking = false;
 
-cd='C:\Users\ru35pec\Desktop\Julius\Macular Degeneration\AMD Experimente';
+% Define a folder in which the experiment and eyetracking data will be
+% stored. Create the folder if it doesn't exist.
+resultsFolder = 'C:\Users\ru35pec\Desktop\Julius\Macular Degeneration\AMD Experimente\results';
+[status,message,messageid] = mkdir(resultsFolder);
+if ~status
+    error('The specified results folder doesn''t exist and couldn''t be created');
+end
 
 exp.subjectinitials = input('Enter participant code (2 letters): ','s');
 if isempty(exp.subjectinitials)
@@ -541,7 +547,7 @@ for t=1:exp.numTrials
     exp.trial(t).Screenshot = Screen('GetImage', window);
     
     % Save exp struct to a mat file in the results folder
-    save([cd,'\results\',filename,'.mat'],'exp');
+    save([resultsFolder,filename,'.mat'],'exp');
     
     % Quit if shift is pressed at trial end
     [keyIsDown,secs,keyCode] = KbCheck; 
@@ -581,7 +587,7 @@ if exp.eyetracking
     Eyelink('CloseFile');
     WaitSecs(0.5);
     try
-        status=Eyelink('ReceiveFile',edfFile,[cd '\results\'],1);
+        status=Eyelink('ReceiveFile',edfFile,resultsFolder,1);
         if status > 0
             disp(['ReceiveFile status ', status]);
         end

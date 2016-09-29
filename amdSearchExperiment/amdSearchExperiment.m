@@ -159,7 +159,7 @@ if exp.rectDistribution(1)*exp.rectDistribution(2)~=exp.numStimuli
                 error(['Rectangle distribution doesn''t make sense. You tried ',num2str(exp.numStimuli),' stimuli in a ',num2str(exp.rectDistribution(1)),' by ',num2str(exp.rectDistribution(2)),' pattern']);
 end
 
-%% Search stimulus definitions
+%% Set stimulus parameters
 
 % Normal Search Distractor
 exp.s1DrawType = drawTypeLine; % The drawing type used for the selected stimulus. Currently, only stimuli drawn with a single drawing routine are supported

@@ -2,18 +2,44 @@
 <head>
 <title>AMD Experiment Manual</title>
 <style>
-
-      span.warning {
-         color: red;
+      body {
+         font-family: "Lucida Sans Unicode";
+      }
+      span.important {
+         color: #CF4922;
+         font-weight: 600;
       }
       span.filefolder {
-         color: green;
+         font-family: "Lucida Console";
+         font-weight: 600;
+         color: #3165B0;
       }
+      a:link {
+         color: #054F1A;
+      }
+      a:visited {
+         color: #054F1A;
+      }
+      a:hover {
+         color: #09912F;
+      }
+      a:selected {
+         color: #09912F;
+      }
+      div.container {
+         margin: auto;
+         max-width: 50em;
+      }
+      span.code {
+         font-family: "Lucida Console";
+         color: #3C4C57;
+         font-weight: 600;
 
     </style>
 </head>
-<body text="#000000" bgcolor="#FFFFFF" link="#FF0000" alink="#FF0000" vlink="#FF0000">
+<body>
 
+<div class="container">
 <h1>AMD Experiment Manual</h1>
 
 <h2>Introduction</h2>
@@ -28,9 +54,10 @@ degeneration written by Julius Krumbiegel at Ludwig-Maximilians-Universit&auml;t
 <h4>General</h4>
 
 <p>The experiment is written in MATLAB (v. R2016a). It uses the freely available Psychtoolbox v3 (PTB) to display full-screen stimuli.
-If the toolbox is not installed, the experiment cannot be run. All required code files are uploaded and maintained at
+If the toolbox is not installed, the experiment cannot be run. All required experiment files are uploaded and maintained at
 <a href="https://github.com/jkrumbiegel/lmu_amd">https://github.com/jkrumbiegel/lmu_amd</a>. File locations inside the project folder are described relative to the
-chosen root folder (RF), e.g., <span class="filefolder">/RF/amdSearchExperiment/rotateCoordinates.m</span>.</p>
+chosen root folder (RF), e.g., <span class="filefolder">/RF/amdSearchExperiment/rotateCoordinates.m</span> while file locations inside
+the PTB are described relative to the PTB root folder (PRF). On the test computer PRF is at <span class="filefolder">C:/toolbox</span>.</p>
 
 <h4>Computer</h4>
 <p>The experiment was mainly coded and tested on a Dell Latitude E7450 laptop running Windows 7. It is not very CPU-demanding and should run on
@@ -50,7 +77,7 @@ accurately. Single monitor or duplicate mode are fine.</p>
 <p>The experiment has a mode where subjects are supposed to point to search stimuli on the screen. This can only work with a
 touch screen monitor. So far, only the iiyama ProLite T2452MTS was tested with the experiment. Touch detection works by checking
 if the cursor position changes from [0,0] to some other coordinate pair. Because no click needs to be registered, the pointing
-detection can be triggered by moving the cursor with a mouse or trackpad. <span class="warning">Therefore, you need to ensure that neither you nor
+detection can be triggered by moving the cursor with a mouse or trackpad. <span class="important">Therefore, you need to ensure that neither you nor
 the patient can move the mouse or trackpad during the experiment, but only touch the screen to give a response.</span> Otherwise,
 you will get false positives.</p>
 
@@ -63,16 +90,105 @@ at basically any resolution. It was tested only at the iiyama's native resolutio
 screen in most cases, the tower mount should be used instead of the desktop mount to keep the space in front of the cameras clear.</p>
 
 <p>PTB comes with most of the files needed to work with the EyeLink system. But you are also required to install the EyeLink Developers Kit
-and replace the standard Eyelink.mexa64 in the <span class="filefolder">/Psychtoolbox/Psychbasic/</span> folder. Both of these things can be downloaded from
+and replace the standard Eyelink.mexa64 in the <span class="filefolder">/PRF/Psychtoolbox/Psychbasic/</span> folder. Both of these things can be downloaded from
 the SR Research forums.</p>
 
 <p>For calibration before eye tracking, the Eyelink toolbox accesses a file called <span class="filefolder">PsychEyelinkDispatchCallback.m</span> located in
-<span class="filefolder">/Psychtoolbox/PsychHardware/EyelinkToolbox/EyelinkBasic/</span>. To be able to use custom modifications of the calibration stimulus to
+<span class="filefolder">/PRF/Psychtoolbox/PsychHardware/EyelinkToolbox/EyelinkBasic/</span>. To be able to use custom modifications of the calibration stimulus to
 enable AMD patients to fixate correctly, this file needs to be replaced with a modified version at
 <span class="filefolder">/RF/EyelinkBasic/PsychEyelinkDispatchCallback.m</span>.</p>
 
+<p>The EyeLink host pc has to be connected to the experiment computer's LAN port with the supplied blue ethernet cable.
+For the two computers to be able to communicate, <span class="important">the experiment computer's IP
+has to be static 100.1.1.2 with subnet mask 255.255.255.0</span>, which can be set in the network adapter's TCP/IP settings.
+MATLAB usually needs a working LAN connection to the university network to run, so constant switching of IP settings might be
+necessary, if there is only one available LAN port. To make this process easier, you can use the freeware TCP IP Manager,
+where you can predefine two profiles for university LAN and EyeLink connection. Once you start the program it resides in the
+system tray, where you can right click its icon and switch between the profiles quickly.</p>
+
+<h4>Motion Tracking</h4>
+
+<p>The motion tracking apparatus consists of a few elements. You need a recording computer running The MotionMonitor, the USB
+A/D board with 16 analog inputs by Measurement Computing, and an Arduino running the correct software available at
+<span class="filefolder">/RF/Arduino/_5v_from_arduino_to_motionmonitor/</span> which is connected to the
+A/D board via a custom BNC cable. The BNC cable needs to be connected to digital pin 13 and GND in order to work with the script.
+The BNC connector should be connected to analog input channel 0.</p>
+
+<p>In the MotionMonitor under capture parameters you can then
+set activities to be triggered by a received analog signal. In the standard setup this should mean board 0 and channel 0.
+Because the trigger signal coming from the arduino is a change from 0V to 5V, set the trigger voltage to 2.5V on the change to
+high voltage. This means that every time the TTL pulse (voltage change) is registered, the trigger inside the MotionMonitor
+will be activated immediately. The logic of the pointing experiment means that it's practical to end a recording activity
+with the trigger rather than starting it. Upon starting a recording in the MotionMonitor, data will be collected constantly
+in a moving window of a specified duration. New data will be appended until the maximum duration is reached, at that point
+each new data sample replaces the oldest one.</p>
+
+<p>If you set the trigger's delay duration to 0 seconds and the data collection
+duration to 4 seconds, e.g., this means that upon receiving a trigger a trial consisting of 4 seconds of data right before
+the trigger will be saved. This makes sense because after touching the screen no more relevant kinetic data can come
+from the subjects. If you want to make sure that the data collection window is never bigger than the trial length, set
+the fixation cross duration to the same value as the data collection window and instruct the subjects to move deliberately
+and only after the search stimulus has been found.</p>
+
+<p>The type of motion tracking equipment accessed by the MotionMonitor can be changed independently of the MATLAB part of
+the experiment. During testing, the Ascension Minibird system was used.</p>
+
+<h3>Experiment settings</h3>
+
+<p>The experiment is built to be flexibly changed depending on the abilities of the test subjects. Therefore, you can change
+a lot of different settings regarding the stimuli. These are all fields in the <span class="code">exp</span> structure. Because this structure is the one that
+is saved together with some behavioral data as a mat file after the experiment, all the settings you choose will still be
+available once you finished the experiment and possibly changed the experiment settings for the next subject.</p>
+
+<p>All the <span class="code">exp</span> fields are explained in comments in the code, most of them can be found in one block in the first
+third of the experiment. Some of the options toggle functionalities, that use other settings which might not be relevant otherwise. For example,
+the field <span class="code">exp.rectDistribution</span> is only used if you choose a rectangular distribution pattern, but
+irrelevant if you selected a circle.</p>
+
+<p>In the basic logic of the experiment you define the type of search you want to implement (normal or conjunction, pointing or yes/no answers),
+choose the number of stimuli and their distribution pattern (circle, square, rectangle or random, with or without circular jitter) and then
+define what the stimuli will look like. If you choose a distribution with random aspects, it will look different in every trial within the
+chosen boundaries.</p>
+
+<p>In principle, the user can change all <span class="code">exp</span> fields relatively safely that are not
+programmatically set (like the <span class="code">pva</span> value which is itself calculated from other variables). A lot of trial-specific data
+is written to instances of <span class="code">exp.trial(i)</span> with <span class="code">i</span> as the trial index. These values are
+determined from the main settings in each trial and are not expected to be changed manually. The experiment does not feature
+a way to determine specific stimulus parameters for single trials, such as a different chosen stimulus color per trial. Logic to handle
+these kinds of features would have to be written additionally.</p>
+
+<p>Under "Set trial parameters" you can set basic search paradigms, fixation cross parameters and stimulus distribution parameters.
+Under "Set stimulus parameters" you can change stimulus appearance for stimuli coded with numbers from 1 to 5. The codes 1 and 2 are used
+in normal search mode, 3, 4 and 5 are meant for conjunction search.</p>
+
+<p>Under "Eyelink configuration" the settings for the eye tracker are specified. Here you can change some additional settings for the
+calibration stimuli if you want to use the modified calibration routine.</p>
+
+<h3>Using the experiment</h3>
+
+<h4>Preparation</h4>
+
+<p>Before the experiment, you should check that the required hardware is connected correctly. When using the Arduino, you will have to
+confirm the COM port number assigned by Windows. Open the device manager and look at the Arduino entry under COM and LPT devices. Enter the
+correct number in the experiment script where <span class="code">arduino</span> is defined. To enable Arduino access and signaling,
+set <span class="code">exp.motiontracking = true</span>.</p>
+
+<p>Power up the EyeLink host computer and check that the correct IP has been set on the experiment pc. A yellow warning triangle
+next to the LAN connection is ok, as that only means there is no internet access. To enable Eyelink access,
+set <span class="code">exp.eyetracking = true</span>.</p>
+
+<p>Check the touchscreen's display and USB connection. Check if a touch is registered in Windows by touching anywhere and watching the cursor position change.</p>
+
+<p>Generate an eight letter subject code which you will have to enter in the console once you start the experiment. This
+subject code will be the filename for your result mat-file and the Eyelink edf-file as well.</p>
+
+<p>Measure the screen's width and the subject's distance to the screen and put these values into the corresponding fields <span class="code">exp.screenWidthCM</span> and
+<span class="code">exp.screenDistanceCM</span>.</p>
+
+<p>Set the correct folder for your results at <span class="code">resultsFolder</span>.</p>
 
 
+</div>
 </body>
 
 </html>

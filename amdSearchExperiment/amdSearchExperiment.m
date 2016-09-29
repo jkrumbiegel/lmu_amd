@@ -40,13 +40,13 @@ if ~status
     error('The specified results folder doesn''t exist and couldn''t be created');
 end
 
-exp.subjectinitials = input('Enter participant code (2 letters): ','s');
-if isempty(exp.subjectinitials)
-    exp.subjectinitials = 'temp';
+exp.subjectcode = input('Enter participant code (8 letters): ','s');
+if isempty(exp.subjectcode)
+    exp.subjectcode = 'temp';
 end
 exp.timestamp = datestr(datetime('now','TimeZone','local'),'yyyy-mm-dd-HH-MM-ss');
-filename = strcat(exp.subjectinitials,'-',exp.timestamp);
-eyelinkfilename = strcat(exp.subjectinitials,datestr(datetime('now','TimeZone','local'),'HHMMss'))  ;
+filename = exp.subjectcode;
+eyelinkfilename = exp.subjectcode;
 
 % put the current time into the random number generator as a seed value
 rng(now);

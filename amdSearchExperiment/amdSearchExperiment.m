@@ -226,6 +226,9 @@ if exp.eyetracking
     el.MMTnspikes = 8; % The number of star spikes in the MMT star pattern
     el.MMTspikewidth = (360/el.MMTnspikes)/3; % The width of each MMT star spike in degrees
     
+    % Save a copy of the used el structure in the experiment data
+    exp.elStruct = el;
+    
     % Without this no changes to the eyelink data structure will be picked
     % up by the callback function
     EyelinkUpdateDefaults(el); 

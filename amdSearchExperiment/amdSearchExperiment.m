@@ -269,9 +269,9 @@ for t=1:exp.numTrials
     % 1: normal search distractor
     % 2: normal search target
     % 
-    % 3: conjunction search distractor 1 (always either the same number or one more than distractor 2)
+    % 3: conjunction search distractor 1 (always either the same number or one less than distractor 2)
     % 4: conjunction search target
-    % 5: conjunction search distractor 2 (always either the same number or one less than distractor 1)
+    % 5: conjunction search distractor 2 (always either the same number or one more than distractor 1)
     if ~exp.conjunctionSearch
         if ~exp.existingTargetIndex(t)
             exp.trial(t).stimulusTypes = ones(1,exp.numStimuli); % No Target

@@ -30,7 +30,7 @@
          margin: auto;
          max-width: 50em;
       }
-      span.code {
+      .code {
          font-family: "Lucida Console";
          color: #3C4C57;
          font-weight: 600;
@@ -55,7 +55,17 @@ degeneration written by Julius Krumbiegel at Ludwig-Maximilians-Universit&auml;t
 
 <p>The experiment is written in MATLAB (v. R2016a). It uses the freely available Psychtoolbox v3 (PTB) to display full-screen stimuli.
 If the toolbox is not installed, the experiment cannot be run. All required experiment files are uploaded and maintained at
-<a href="https://github.com/jkrumbiegel/lmu_amd">https://github.com/jkrumbiegel/lmu_amd</a>. File locations inside the project folder are described relative to the
+<a href="https://github.com/jkrumbiegel/lmu_amd">https://github.com/jkrumbiegel/lmu_amd</a>. If you want to pull the repository with all code from github 
+run the following code from the MATLAB console with your desired root folder as the current working directory:</p>
+<p class="code"> 
+git init<br>
+git remote add origin git://github.com/jkrumbiegel/lmu_amd.git<br>
+git fetch --all<br>
+git pull origin master<br>
+</p>
+
+<p>
+To get updates from the server to an existing copy of the repository, you only have to run the pull command. In this manual, file locations inside the project folder are described relative to the
 chosen root folder (RF), e.g., <span class="filefolder">/RF/amdSearchExperiment/rotateCoordinates.m</span> while file locations inside
 the PTB are described relative to the PTB root folder (PRF). On the test computer PRF is at <span class="filefolder">C:/toolbox</span>.</p>
 
@@ -182,10 +192,12 @@ set <span class="code">exp.eyetracking = true</span>.</p>
 <p>Generate an eight letter subject code which you will have to enter in the console once you start the experiment. This
 subject code will be the filename for your result mat-file and the Eyelink edf-file as well.</p>
 
-<p>Measure the screen's width and the subject's distance to the screen and put these values into the corresponding fields <span class="code">exp.screenWidthCM</span> and
-<span class="code">exp.screenDistanceCM</span>.</p>
+<p>Measure the screen's width and the subject's distance to the screen and put these values into the corresponding fields 
+<span class="code">exp.screenWidthCM</span> and <span class="code">exp.screenDistanceCM</span>.</p>
 
 <p>Set the correct folder for your results at <span class="code">resultsFolder</span>.</p>
+
+<h3>Visual Analysis</h3>
 
 
 </div>

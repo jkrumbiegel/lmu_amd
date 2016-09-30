@@ -291,13 +291,10 @@ for t=1:exp.numTrials
                                               5 * ones(1,nGroup2)];
             end
         else
-            exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)-1),...
-                                          4,... % Target
-                                          5 * ones(1,floor(exp.numStimuli/2))];
             if ~exp.conjSearchDistRand
-            exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)-1),...
-                                          4,... % Target
-                                          5 * ones(1,floor(exp.numStimuli/2))];
+                exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)-1),...
+                                              4,... % Target
+                                              5 * ones(1,floor(exp.numStimuli/2))];
             else
                 nGroup1 = randi([exp.conjSearchDistRandMin,exp.numStimuli-exp.conjSearchDistRandMin-1]);
                 nGroup2 = exp.numStimuli -1 -nGroup1;

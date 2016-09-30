@@ -62,7 +62,7 @@ for i = 1:length(Events.block.Tend)
     clear EL
 end
 
-save(sFilename,'elData');
+save([sFilename,'_el'],'elData');
   
             
 

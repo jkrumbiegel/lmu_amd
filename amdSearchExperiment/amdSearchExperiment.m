@@ -118,6 +118,8 @@ exp.pixPerVA = pva;
 %% Set trial parameters
 exp.searchMode = 2; % 1: pointing, 2: yes/no
 exp.conjunctionSearch = true; % Enable or disable conjunction search (uses stimuli 3,4,5 instead of 1,2)
+exp.conjSearchDistRand = true; % Enable or disable randomization of the distribution of distractors to the two groups in conjunction searches. When disabled 50/50 or the next possible distribution will be chosen.
+exp.conjSearchDistRandMin = 2; % The minimum number of distractors in each group in conjunction searches when using random distribution. Should be higher than 1 so the target is always the only unique stimulus.
 exp.noTargetPossible = true; % Enable or disable trials without target (don't use in pointing mode)
 exp.nTrialsMissingTargets = 5; % Number of trials without target
 exp.numStimuli = 35; % Number of stimuli per trial (target and distractors)
@@ -279,12 +281,30 @@ for t=1:exp.numTrials
         end
     else
         if ~exp.existingTargetIndex(t)
-            exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)),...
-                                          5 * ones(1,floor(exp.numStimuli/2))];
+            if ~exp.conjSearchDistRand
+                exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)),...
+                                              5 * ones(1,floor(exp.numStimuli/2))];
+            else
+                nGroup1 = randi([exp.conjSearchDistRandMin,exp.numStimuli-exp.conjSearchDistRandMin]);
+                nGroup2 = exp.numStimuli-nGroup1;
+                exp.trial(t).stimulusTypes = [3 * ones(1,nGroup1),...
+                                              5 * ones(1,nGroup2)];
+            end
         else
             exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)-1),...
                                           4,... % Target
                                           5 * ones(1,floor(exp.numStimuli/2))];
+            if ~exp.conjSearchDistRand
+            exp.trial(t).stimulusTypes = [3 * ones(1,ceil(exp.numStimuli/2)-1),...
+                                          4,... % Target
+                                          5 * ones(1,floor(exp.numStimuli/2))];
+            else
+                nGroup1 = randi([exp.conjSearchDistRandMin,exp.numStimuli-exp.conjSearchDistRandMin-1]);
+                nGroup2 = exp.numStimuli -1 -nGroup1;
+                exp.trial(t).stimulusTypes = [3 * ones(1,nGroup1),...
+                                              4,... % Target
+                                              5 * ones(1,nGroup2)];
+            end
         end
         
     end

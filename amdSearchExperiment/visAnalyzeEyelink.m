@@ -5,8 +5,7 @@ if nargin == 0
 end
 filename = strsplit(filename,'.');
 filename = filename{1};
-fnparts = strsplit(filename,'-');
-edfname = strcat(fnparts{1},fnparts{5},fnparts{6},fnparts{7});
+edfname = strcat(filename,'_el');
 
 expData = load([pathname,filename,'.mat']);
 expData = expData.exp;
